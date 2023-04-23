@@ -1,70 +1,122 @@
-# Getting Started with Create React App
+# SteelEye Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 1. Explain what the simple List component does.
+The simple List component is a React component that takes an array of items as a prop and renders a list of those items with the ability to select an item from the list. It consists of two nested components: SingleListItem and ListComponent. SingleListItem is responsible for rendering a single list item, while ListComponent is responsible for rendering the entire list by mapping over the items array and rendering a SingleListItem for each item.
 
-## Available Scripts
+## 2. What problems / warnings are there with code?
 
-In the project directory, you can run:
+1) In the WrappedSingleListItem, the onClickHandler is not being invoked properly. Instead of being called when the list item is clicked, the onClickHandler is being called immediately when the component is rendered. 
 
-### `npm start`
+`onClick={onClickHandler(index)}`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+2) Incorrect syntax of useState() hook. The useState() hook returns an array of two elements where the first element is the state value and the second element is a function to update the state value. The array elements need to be swapped.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+`const [setSelectedIndex, selectedIndex] = useState();`
 
-### `npm test`
+3) In the items.map() function, each child in a list should have a unique key prop. Also, the isSelected prop should be passed as a boolean, instead it is being passed as a selectedIndex state value. The correct code should be:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+`{items.map((item, index) => (
+        <SingleListItem
+          onClickHandler={() => handleClick(index)}
+          text={item.text}
+          index={index}
+          isSelected={selectedIndex}
+        />
+      ))}`
+      
+4) In the WrappedListComponent, the prop type for the items array is not defined correctly. 
+  
+  `PropTypes.array(PropTypes.shapeOf({...}))`
+  
+5) The items in WrappedListComponent.defaultProps cannot be null. They must have an array of elements.
+  
+  `WrappedListComponent.defaultProps = {
+  items: null,
+};`
 
-### `npm run build`
+## 3. Please fix, optimize, and/or modify the component as much as you think is necessary.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+import React, { useState, useEffect, memo } from 'react';
+import PropTypes from 'prop-types';
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+// Single List Item
+const WrappedSingleListItem = ({
+  index,
+  isSelected,
+  onClickHandler,
+  text,
+}) => {
+  return (
+    <li
+      style={{ backgroundColor: isSelected ? 'green' : 'red'}}
+      onClick={()=> onClickHandler(index)}
+    >
+      {text}
+    </li>
+  );
+};
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+WrappedSingleListItem.propTypes = {
+  index: PropTypes.number,
+  isSelected: PropTypes.bool,
+  onClickHandler: PropTypes.func.isRequired,
+  text: PropTypes.string.isRequired,
+};
 
-### `npm run eject`
+const SingleListItem = memo(WrappedSingleListItem);
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+// List Component
+const WrappedListComponent = ({
+  items,
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState();
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  useEffect(() => {
+    setSelectedIndex(null);
+  }, [items]);
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+  const handleClick = index => {
+    setSelectedIndex(index);
+  };
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+  return (
+    <ul style={{ textAlign: 'left' }}>
+      {items.map((item, index) => (
+        <SingleListItem
+          onClickHandler={() => handleClick(index)}
+          text={item.text}
+          index={index}
+          isSelected={index === selectedIndex}
+        />
+      ))}
+    </ul>
+  )
+};
 
-## Learn More
+WrappedListComponent.propTypes = {
+  items: PropTypes.arrayOf(PropTypes.shape({
+    text: PropTypes.string.isRequired,
+  })),
+};
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+WrappedListComponent.defaultProps = {
+  items: [{
+    text: "Daksh Patidar 12019231",
+  },
+  {
+    text: "SteelEye Frontend Assignment ",
+  },
+  {
+    text: "SteelEye was established in October 2017 to reduce the complexity and cost of compliance and to enable financial firms globally to manage their regulatory obligations through a single platform.",
+  },
+  {
+    text: "SteelEye is the first and only truly integrated surveillance solution. We empower you to focus on what matters, all from a single platform.",
+  },
+]
+};
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+const List = memo(WrappedListComponent);
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+export default List;
+```
